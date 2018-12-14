@@ -1,0 +1,9 @@
+Up to two points deducted for each of the programs in each category of
+the first three categories. 
+For each program, 0 is good, 1 is could be better, 2 means significant issues.
+5 pts per program will be lost if the program included an scanf that didn't
+protect against buffer overflow (or did it incorrectly)
+5 pts per program will be lost for each unallowed function used unless a
+harsher penalty is written in the program spec.
+You must have used malloc or calloc to allocate the space for the array to
+receive credit for problem 2.

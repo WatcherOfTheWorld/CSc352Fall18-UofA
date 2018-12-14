@@ -1,0 +1,6 @@
+mymake.o:mymake.c
+	gcc -Wall -g -c mymake.c -o mymake.o
+depend.o:depend.c
+	gcc -Wall -g -c depend.c -o depend.o
+mymake:mymake.o depend.o
+	gcc depend.o mymake.o -o mymake

@@ -1,0 +1,113 @@
+#!/bin/bash
+file_prefix="test_"
+reference="ex_"
+
+if [[ $# == 0 ]]; then
+	# grab argument from stdin
+	if read program_name; then
+		echo "">/dev/null
+	else
+		(>&2 echo "no input 0")
+		exit 1
+	fi
+	if read testcases; then
+		echo "">/dev/null
+	else
+		(>&2 echo "no input 1")
+		exit 1
+	fi
+else 
+	# grab program name and folder name from argument
+	program_name=$1
+	testcases=$2
+fi 
+
+# check if target program exist
+if [[ -x $program_name ]]; then 
+	echo "">/dev/null
+else
+	(>&2 echo "Target program does not exist or is not executable")
+	exit 1
+fi
+
+# check if testcase folder exist
+if [[ -d $testcases ]]; then
+	echo "">/dev/null
+else
+	(>&2 echo "Folder does not exist")
+
+fi
+
+# check if reference program exist
+if [[ -x $testcases/$reference$program_name ]]; then 
+	echo "">/dev/null
+else
+	(>&2 echo "Reference program does not exist or is not executable")
+	exit 1
+fi
+
+
+ls $testcases/$file_prefix$program_name* | while read X; do
+	if [ -f "$X" ]; then
+		#echo ${X##*/}
+		{ 
+			timeout 2 ./$program_name < $X > wei 2>buzai 
+		} &> /dev/null
+		target_retv=$?
+		if [ $target_retv == 139 ];then
+			echo "*** testcase: ${X##*/} [ FAILED - Abnormal termination ]"
+		elif [ $target_retv == 124 ]; then
+			echo "*** testcase: ${X##*/} [ FAILED - Timed out ]"		
+		else
+			./$testcases/$reference$program_name < $X > zaima 2>sgnb
+			ref_retv=$?
+			diff -Z wei zaima > /dev/null
+			if [ $? != 0 ]; then
+				echo "*** testcase: ${X##*/} [ stdout - FAILED ]"
+			else
+				echo "*** testcase: ${X##*/} [ stdout - PASSED ]"
+			fi
+			if [ $target_retv == $ref_retv ]; then
+				echo "*** testcase: ${X##*/} [ return code - PASSED ]"
+			else
+				echo "*** testcase: ${X##*/} [ return code - FAILED ]"
+			fi
+			# check stderr output
+			if [ -s "sgnb" ]; then
+				echo sne
+				if [ -s "buzai" ]; then
+					echo "*** testcase: ${X##*/} [ stderr - PASSED ]"
+				else
+					echo "*** testcase: ${X##*/} [ stderr - FAILED ]"
+				fi
+			else
+				if [ -s "buzai" ]; then
+					echo "*** testcase: ${X##*/} [ stderr - FAILED ]"
+				else
+					echo "*** testcase: ${X##*/} [ stderr - PASSED ]"
+				fi
+			fi
+
+			# check memory error and memory leak
+			valgrind ./$program_name < $X &>fnndp
+			grep "0 errors from 0 contexts" fnndp &>/dev/null
+			if [ $? == 0 ]; then
+				echo "*** testcase: ${X##*/} [ valgrind - PASSED ]"
+			else
+				echo "*** testcase: ${X##*/} [ valgrind - FAILED ]"
+			fi
+			grep "All heap blocks were freed" fnndp  &>/dev/null
+			if [ $? == 0 ]; then
+				echo "*** testcase: ${X##*/} [ memory free - PASSED ]"
+			else
+				echo "*** testcase: ${X##*/} [ memory free - FAILED ]"
+			fi
+
+
+
+		fi
+
+	else
+		echo "not a file"
+	fi
+done

@@ -1,0 +1,28 @@
+| HERE BEGINS THE OUTPUT FROM THE AUTOMATIC GRADING SCRIPT |
++----------------------------------------------------------+
+
+------------- BEGIN TESTING OF sumLine.c -------------
+
+    *** testcase: test_sumLine_00 [ PASSED ]
+    *** testcase: test_sumLine_01 [ PASSED ]
+    *** testcase: test_sumLine_02 [ PASSED ]
+    *** testcase: test_sumLine_03 [ PASSED ]
+    *** testcase: test_sumLine_04 [ PASSED ]
+    *** testcase: test_sumLine_05 [ PASSED ]
+    *** testcase: test_sumLine_06 [ PASSED ]
+    *** testcase: test_sumLine_07 [ PASSED ]
+    *** testcase: test_sumLine_08 [ PASSED ]
+    *** testcase: test_sumLine_09 [ PASSED ]
+    *** testcase: test_sumLine_10 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_11 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_12 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_13 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_14 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_15 [ FAILED  : Abnormal termination (Segmentation fault)  ]
+    *** testcase: test_sumLine_16 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_17 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_18 [ FAILED  : Abnormal termination (Aborted)  ]
+    *** testcase: test_sumLine_19 [ FAILED  : Abnormal termination (Aborted)  ]
+
+SCORE FOR 'sumLine': 50 out of 100 points
+----------------------------------------------------

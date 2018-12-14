@@ -1,0 +1,277 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int err = 0;
+
+typedef struct node{
+	struct node *next;
+	char *this;
+
+} node;
+
+typedef struct link{
+	int marked;
+	node *page2;
+	node *page1;
+	struct link *next;
+} link;
+
+void addPages(node*, char*);
+node* findNode(char*, node*);
+void addLinks(link*, node*, char*);
+void addLink(link*, node*, node*);
+void freeNodes(node*);
+void freeLinks(link*);
+void freeNode(node*);
+int findPath(link*, node*, node*);
+void resetMarker(link*);
+
+int main(void){
+	char *line = NULL;
+	size_t len = 0;
+	node *nodehead = NULL;
+	nodehead = malloc(sizeof(node));
+
+	link *linkhead = NULL;
+	linkhead = malloc(sizeof(link));
+
+	if(nodehead == NULL || linkhead == NULL){
+		fprintf(stderr, "unable to malloc address\n");
+		exit(1);
+	}
+	nodehead->next = NULL;
+	linkhead->next = NULL;
+	while(getline(&line, &len, stdin) != EOF){
+		int offset = 0;
+		char curr[14];
+		int retv;
+		retv = sscanf(line, "%13s%n", curr, &offset);
+		//printf("%s\n", curr);
+		if(retv == EOF){
+			// skip this command			
+			//printf("skip line\n");
+		}else if(strcmp(curr, "@addPages") == 0){
+			// printf("add page command\n");
+			// printf("%s\n", line+offset);
+			addPages(nodehead, line+offset);
+			// node *temp;
+			// temp = nodehead;
+			// while(temp->next!= NULL){
+			// 	temp = temp->next;
+			// 	printf("%s->", temp->this);
+			// }
+			// printf("NULL\n");
+		}else if(strcmp(curr, "@addLinks") == 0){
+			//printf("add link command\n");
+			addLinks(linkhead, nodehead, line+offset);
+			// link *temp;
+			// temp = linkhead;
+			// while(temp->next != NULL){
+			// 	temp = temp->next;
+			// 	printf("(%s, %s)->", temp->page1->this, temp->page2->this);
+			// }
+			// printf("NULL\n");
+		}else if(strcmp(curr, "@isConnected") == 0){
+			//printf("is connected command\n");
+
+			node *start, *des;
+			char str[65];
+			char *newLine;
+			newLine = line+offset;
+			if(sscanf(newLine,"%64s%n", str, &offset)!=EOF){
+				start = findNode(str, nodehead);
+				newLine+=offset;
+				if(sscanf(newLine,"%64s%n", str, &offset)!=EOF){
+					des = findNode(str, nodehead);
+					int i = findPath(linkhead, start, des);
+					printf("%d\n", i);
+					resetMarker(linkhead);
+				}
+			}
+
+
+			// TODO:
+		}else{
+			err = 1;
+			fprintf(stderr, "Not a Command\n");
+		}
+		free(line);
+		line = NULL;
+	}
+	free(line);
+	freeLinks(linkhead);
+	freeNodes(nodehead);
+
+	return err;
+}
+
+void addPages(node *head, char *string){
+	char currString[65];
+	int offset;
+	while(sscanf(string, "%64s%n", currString, &offset) != EOF){
+		//printf("%s\n", currString);
+		string+=offset;
+		node *newNode = NULL;
+		newNode = malloc(sizeof(node));
+		if(newNode == NULL){
+			fprintf(stderr, "err in malloc space\n");
+			exit(1);
+		}
+		node *temp;
+		temp = head;
+		int skip = 0;
+		while(temp->next!=NULL){
+			//printf("adding nodes\n");
+			temp = temp->next;
+			// skip line when duplicte
+			if(strcmp(temp->this, currString) == 0){
+				skip = 1;
+				err = 1;
+				fprintf(stderr, "the page %s is arealdy exist\n", temp->this);
+				continue;
+			}
+		}
+		if(skip){
+			continue;
+		}
+		newNode->this = strdup(currString);
+		newNode->next = NULL;
+		temp->next = newNode;
+	}
+}
+
+void addLinks(link *linkhead, node *nodehead, char *string){
+	int offset;
+	char currString[65];
+	if(sscanf(string, "%64s%n", currString, &offset)!=EOF){
+		string+= offset;
+		node *sourcePage = findNode(currString, nodehead);
+		//printf("source page is %s\n", sourcePage->this);
+		//printf("get source page\n");
+		if(sourcePage ==NULL){
+			err = 1;
+			fprintf(stderr, "the srouce page %s does not exist\n", currString);
+			return;
+		}
+		while(sscanf(string, "%64s%n", currString, &offset)!= EOF){
+			string += offset;
+			node *linkPage =findNode(currString, nodehead);
+			//printf("link to %s\n", linkPage->this);
+			if(linkPage ==NULL){
+				fprintf(stderr, "the page %s\n does not exist", currString);
+				err = 1;
+				continue;
+			}
+			addLink(linkhead, sourcePage, linkPage);
+		}
+	}
+}
+
+void addLink(link *head, node *page1, node *page2){
+	if(page1 == page2){
+		// skip when page1 == page2
+		return;
+	}
+	while(head->next != NULL){
+		head = head->next;
+
+		// skip when link arealdy exsit
+		if(head->page1 == page1){
+			if(head->page2 == page2){
+				return;
+			}
+		}
+	}
+
+	link *newLink = NULL;
+	newLink = malloc(sizeof(link));
+	if(newLink == NULL){
+		fprintf(stderr, "unable to malloc space\n");
+		exit(1);
+	}
+	newLink->page1 = page1;
+	newLink->page2 = page2;
+	newLink->marked = 0;
+	newLink->next = NULL;
+	head->next = newLink;
+}
+
+node* findNode(char *page, node *head){
+	//printf("find page: %s\n", page);
+	while(head->next!= NULL){
+		head = head->next;
+		if(strcmp(page, head->this)==0){
+			return head;
+		}
+	}
+	return NULL;
+}
+
+int findPath(link *root, node *start, node *destination){
+	if(start == NULL||destination ==NULL){
+		err = 1;
+	}else if(start == destination){
+		return 1;
+	}
+	//fprintf(stderr, "我不会写！！！！！\n");
+	link *head;
+	head = root;
+	while(head->next!= NULL){
+		head = head->next;
+		//printf("%s -> %s\n", head->page1->this, head->page2->this);
+		if(head->marked == 0){
+			if(head->page1 == start){
+				head->marked = 1;
+				//printf("found start page\n");
+				if(head->page2 == destination){
+					//printf("path found\n");
+					return 1;
+				}else{
+					int i = findPath(root, head->page2, destination);
+					if(i){
+						return i;
+					}
+				}
+			}else{
+				//printf("start page not found\n");
+			}
+		}else{
+			//printf("skip this link\n");
+		}
+	}
+	return 0;
+}
+
+void resetMarker(link *head){
+	//printf("reset marker\n");
+	while(head->next != NULL){
+		head = head->next;
+		head->marked = 0;
+		//printf("reset: (%s, %s)", head->page1->this, head->page2->this);
+
+	}
+}
+
+/*
+* free links and nodes
+*/
+void freeLinks(link *head){
+	if(head->next!= NULL){
+		freeLinks(head->next);
+	}
+	free(head);
+}
+void freeNodes(node *head){
+	if(head->next!= NULL){
+		freeNode(head->next);
+	}
+	free(head);
+}
+void freeNode(node *head){
+	if(head->next != NULL){
+		freeNode(head->next);
+	}
+	free(head->this);
+	free(head);
+}

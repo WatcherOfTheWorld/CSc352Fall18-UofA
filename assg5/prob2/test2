@@ -1,0 +1,12 @@
+Indentation:                                    0
+No file header, or missing function comments:   0
+Non informative error measures:                 0
+No protection of buffer overflow                0
+Using fucntions that aren't allowed             0
+Program restriction violations                  0
+
+                                                ----
+Total:                                          250
+
+Grading TA: Ju 
+TA Notes:  

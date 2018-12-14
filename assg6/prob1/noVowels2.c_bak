@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+	
+
+struct node* allocate();
+char* hasNext();
+int removeVowels(char[], char[]);
+
+struct node *curr;
+int ret = 0;
+
+struct node{
+	char *string;
+	struct node *next;
+	int checked;
+};
+
+int main(void){
+	struct node *root =allocate();
+	root->next = NULL;
+	char string[65];
+	struct node *temp = NULL;
+	temp = root;
+	struct node *next;
+	while(scanf("%64s", string)!=EOF){
+		next = allocate();
+		next->string = strdup(string);
+		next->checked = 0;
+		next->next =NULL;
+		temp->next = next;
+		temp = temp->next;
+	}
+	
+	// temp = root;
+	// while(temp->next != NULL){
+	// 	temp = temp->next;
+	// 	printf("%s\n", temp->string);
+	// }
+
+	curr = root;
+	char *target;
+	while((target = hasNext()) != NULL){
+		temp = root;
+		while(temp->next != NULL){
+			temp = temp->next;
+			if(temp->checked == 0){
+				char *curr = temp->string;
+				char new[65];
+				if(removeVowels(curr, new)){
+					fprintf(stderr, "bad word: %s\n", temp->string);
+					temp->checked = 1;
+					continue;
+				}else if(*new!= *target){
+					continue;
+				}else if(strcmp(new,target) == 0){
+					printf("%s ", curr);
+					temp->checked = 1;
+				}
+			}
+		}
+		printf("\n");
+	}
+	return ret;
+
+}
+
+struct node* allocate(){
+	struct node *new = malloc(sizeof(struct node));
+	if(new == NULL){
+		fprintf(stderr, "err pccurs\n");
+		exit(1);
+	}
+	return new;
+}
+
+char* hasNext(){
+	while(curr->next != NULL){
+		curr = curr->next;
+		if(curr->checked == 0){
+			char *new = malloc(65);
+			if(removeVowels(curr->string, new)){
+				curr->checked = 1;
+				ret = 1;
+				fprintf(stderr, "bad word: %s\n", curr->string);
+				continue;
+			}else{
+				// skip this word if it is empty or only contains vowels
+				if(*new == 0){
+					curr->checked = 1;
+					continue;
+				}
+				return new;
+			}
+		}
+	}
+	return NULL;
+}
+
+/*
+* remove all vowels from first array and put the result 
+* back into the sec array
+* return 0 if no err has occured, return 1 otherwise
+*/
+int removeVowels(char origal[], char target[]){
+	int k = 0;
+	int i;
+	for(i = 0; i<strlen(origal); i++){
+		char targetChar = tolower(origal[i]);
+		// if reach the end of string, exit loopping
+		if(targetChar !='a' && targetChar != 'e' &&
+			targetChar != 'i' && targetChar != 'o' &&
+			targetChar != 'u'){
+			if(targetChar>='a'&& targetChar<='z'){
+				target[k] = targetChar;
+				k ++;
+			}else{
+				return 1;
+			}
+		}
+	}
+	// mark k as 0 as the end of string 
+	target[k] = 0;
+	return 0;
+}

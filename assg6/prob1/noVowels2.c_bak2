@@ -1,0 +1,135 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+	
+
+struct node* allocate();
+char* hasNext();
+int removeVowels(char[], char[]);
+int equals(char[], char[]);
+
+struct node *curr;
+int ret = 0;
+
+struct node{
+	char *string;
+	struct node *next;
+	char *noVowel;
+	int checked;
+};
+
+int main(void){
+	struct node *root =allocate();
+	root->next = NULL;
+	char string[65];
+	struct node *temp = NULL;
+	temp = root;
+	struct node *next;
+	char noVowel[65];
+	while(scanf("%64s", string)!=EOF){
+		if(removeVowels(string, noVowel)){
+			fprintf(stderr, "Bad word: %s\n", string);
+			continue;
+		}else if(*noVowel == 0){
+			continue;
+		}
+		next = allocate();
+		next->string = strdup(string);
+		next->noVowel = strdup(noVowel);
+		next->checked = 0;
+		next->next =NULL;
+		temp->next = next;
+		temp = temp->next;
+	}
+	
+	// temp = root;
+	// while(temp->next != NULL){
+	// 	temp = temp->next;
+	// 	printf("%s\n", temp->noVowel);
+	// }
+
+	curr = root;
+	char *target;
+	while((target = hasNext()) != NULL){
+		temp = root;
+		while(temp->next != NULL){
+			temp = temp->next;
+			if(!temp->checked){
+				//fprintf(stderr,"%s %s\n", temp->noVowel, target);
+				if(equals(temp->noVowel, target)){
+					printf("%s ", temp->string);
+					temp->checked = 1;
+				}
+			}
+		}
+		printf("\n");
+	}
+	return ret;
+
+}
+
+struct node* allocate(){
+	struct node *new = malloc(sizeof(struct node));
+	if(new == NULL){
+		fprintf(stderr, "err pccurs\n");
+		exit(1);
+	}
+	return new;
+}
+
+char* hasNext(){
+	while(curr->next != NULL){
+		curr = curr->next;
+		if(!curr->checked){
+			return curr->noVowel;
+		}
+	}
+	return NULL;
+}
+
+/*
+* remove all vowels from first array and put the result 
+* back into the sec array
+* return 0 if no err has occured, return 1 otherwise
+*/
+int removeVowels(char origal[], char target[]){
+	int k = 0;
+	int i;
+	for(i = 0; i<64; i++){
+		char targetChar = tolower(origal[i]);
+		// if reach the end of string, exit loopping
+		if(targetChar == 0){
+			break;
+		}else if(targetChar !='a' && targetChar != 'e' &&
+			targetChar != 'i' && targetChar != 'o' &&
+			targetChar != 'u'){
+			if(targetChar>='a'&& targetChar<='z'){
+				target[k] = targetChar;
+				k ++;
+			}else{
+				return 1;
+			}
+		}
+	}
+	// mark k as 0 as the end of string 
+	target[k] = 0;
+	return 0;
+}
+
+int equals(char *a, char *b){
+	while(1){
+		if(*a != *b){
+			return 0;
+		}
+		a= a+1;
+		b= b+1;
+		if((*a == 0)){
+			if(*b == 0){
+				return 1;
+			}else{
+				return 0;
+			}
+		}
+	}
+}
